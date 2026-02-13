@@ -14,6 +14,7 @@ const albumNameWidth = ref(100);
 const albumExportSize = ref(3840);
 
 const albumData = ref(null);
+const albumError = ref(null);
 const cover = ref(null);
 
 const chunkedTracks = computed(() => {
@@ -70,14 +71,21 @@ async function generateAlbum(customId) {
   const id = customId || albumId.value.replace(/\?(.*)/, "").replace(/(.*)\//g, "");
   if (!id || id.length !== 22) return;
   const url = import.meta.env.PROD ? `/album/${id}` : `http://localhost:3000/album/${id}`;
-  const response = await fetch(url);
-  const data = await response.json();
-  console.log(data);
-  albumData.value = data;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP error with status: ${response.status}`)
+    const data = await response.json();
+    console.log(data);
+    albumData.value = data;
+  } catch (error) {
+    console.error(error);
+    albumError.value = error || null;
+  }
 }
 
-generateAlbum("2uKD5g5T7oklsMHJDcPgLB");
-// generateAlbum("5TBmws55nbERqZgYuoY4uB");
+generateAlbum("2uKD5g5T7oklsMHJDcPgLB"); // Pashanim: 2000
+// generateAlbum("5TBmws55nbERqZgYuoY4uB"); // Pashanim: junge ceos 1
 </script>
 
 <template>
@@ -87,125 +95,107 @@ generateAlbum("2uKD5g5T7oklsMHJDcPgLB");
     </header>
     <div class="center">
       <div class="left">
-        <div v-if="albumData" ref="cover" class="cover">
-          <span class="artist">{{ albumData.artists[0].name }}</span>
-          <img class="cover-art" :src="albumData.images[0].url">
-          <div class="bottom">
-            <div class="songs">
-              <ol v-for="(chunkTracks, i) in chunkedTracks" :key="i">
-                <li v-for="(track, trackI) in chunkTracks" :key="trackI">
-                  {{ albumSongsPerColumn*i + trackI+1 }}. {{ track }}
-                </li>
-              </ol>
-            </div>
-            <div class="code">
-              <img :src="`https://scannables.scdn.co/uri/plain/png/eeeeee/black/640/${albumData.uri}`" alt="Spotify Code">
-            </div>
-            <div class="right">
-              <div class="colors">
-                <div v-for="color in albumColors" :style="{ backgroundColor: color }"></div>
+        <div ref="cover" class="cover">
+          <template v-if="albumData">
+            <span class="artist">{{ albumData.artists[0].name }}</span>
+            <img class="cover-art" :src="albumData.images[0].url">
+            <div class="bottom">
+              <div class="songs">
+                <ol v-for="(chunkTracks, i) in chunkedTracks" :key="i">
+                  <li v-for="(track, trackI) in chunkTracks" :key="trackI">
+                    {{ albumSongsPerColumn*i + trackI+1 }}. {{ track }}
+                  </li>
+                </ol>
               </div>
-              <div class="info">
-                <ul>
-                  <li v-if="albumGenre">Genre: {{ albumGenre }}</li>
-                  <li>Release Date: {{ formatDate(albumData.release_date) }}</li>
-                  <li>Release Label: {{ albumData.label }}</li>
-                  <li>Length: {{ formatTime(Math.round(albumData.tracks.items.map(t => t.duration_ms).reduce((sum, num) => sum + num) / 1000)) }}</li>
-                </ul>
+              <div class="code">
+                <img :src="`https://scannables.scdn.co/uri/plain/png/eeeeee/black/640/${albumData.uri}`" alt="Spotify Code">
               </div>
+              <div class="right">
+                <div class="colors">
+                  <div v-for="color in albumColors" :style="{ backgroundColor: color }"></div>
+                </div>
+                <div class="info">
+                  <ul>
+                    <li v-if="albumGenre">Genre: {{ albumGenre }}</li>
+                    <li>Release Date: {{ formatDate(albumData.release_date) }}</li>
+                    <li>Release Label: {{ albumData.label }}</li>
+                    <li>Length: {{ formatTime(Math.round(albumData.tracks.items.map(t => t.duration_ms).reduce((sum, num) => sum + num) / 1000)) }}</li>
+                  </ul>
+                </div>
+              </div>
+              <span class="name">{{ albumData.name }}</span>
             </div>
-            <span class="name">{{ albumData.name }}</span>
-          </div>
+          </template>
+          <span v-else class="error">
+            <details>
+              <summary>Unable to generate Album: {{ albumError?.message || "Unknown Error" }}</summary>
+              {{ albumError?.stack || "Unknown" }}
+            </details>
+          </span>
         </div>
       </div>
       <div class="right">
         <h2>Options</h2>
-        <div>
-          <label for="albumIdInput">Spotify Album URL/ID</label>
-          <input v-model="albumId" id="albumIdInput" type="text" placeholder="2uKD5g5T7oklsMHJDcPgLB" @input="generateAlbum()">
+        <Option title="Spotify Album URL/ID" for="albumIdInput"><input v-model="albumId" id="albumIdInput" type="text" placeholder="2uKD5g5T7oklsMHJDcPgLB" @input="generateAlbum()"></Option>
+        <Option :title="`Songs Size (${albumSongsSize})`" for="albumSongsSizeInput"><input v-model="albumSongsSize" id="albumSongsSizeInput" type="range" min="0.4" max="1" step="0.01"></Option>
+        <Option :title="`Songs Offset (${albumSongsOffset})`" for="albumSongsOffsetInput"><input v-model="albumSongsOffset" id="albumSongsOffsetInput" type="range" min="-0.15" max="0.05" step="0.01"></Option>
+        <Option :title="`Songs Width (${albumSongsWidth})`" for="albumSongsWidthInput"><input v-model="albumSongsWidth" id="albumSongsWidthInput" type="range" min="0.1" max="0.7" step="0.01"></Option>
+        <Option :title="`Songs per Column (${albumSongsPerColumn})`" for="albumSongsPerColumnInput"><input v-model="albumSongsPerColumn" id="albumSongsPerColumnInput" type="range" min="5" max="20"></Option>
+        <Option title="Colors"><div><input v-for="(color, i) in albumColors" :key="i" v-model="albumColors[i]" type="color"></div></Option>
+        <Option title="Genre" for="albumGenreInput"><input v-model="albumGenre" id="albumGenreInput" type="text" placeholder="Hip-Hop/Rap"></Option>
+        <Option :title="`Name Size (${albumNameSize})`" for="albumNameSizeInput"><input v-model="albumNameSize" id="albumNameSizeInput" type="range" min="1" max="6" step="0.1"></Option>
+        <Option :title="`Name Width (${albumNameWidth})`" for="albumNameWidthInput"><input v-model="albumNameWidth" id="albumNameWidthInput" type="range"></Option>
+        <div class="spacer"></div>
+        <div v-if="albumData" class="album-display">
+          <div><img :src="albumData?.images[0].url"></div>
+          <div>
+            <span class="title">{{ albumData.name }}</span>
+            <span class="artist">{{ albumData.artists[0].name }}</span>
+          </div>
         </div>
-        <div>
-          <label for="albumSongsSizeInput">Songs Size ({{ albumSongsSize }})</label>
-          <input v-model="albumSongsSize" id="albumSongsSizeInput" type="range" min="0.4" max="1" step="0.01">
-        </div>
-        <div>
-          <label for="albumSongsOffsetInput">Songs Offset ({{ albumSongsOffset }})</label>
-          <input v-model="albumSongsOffset" id="albumSongsOffsetInput" type="range" min="-0.15" max="0.05" step="0.01">
-        </div>
-        <div>
-          <label for="albumSongsWidthInput">Songs Width ({{ albumSongsWidth }})</label>
-          <input v-model="albumSongsWidth" id="albumSongsWidthInput" type="range" min="0.1" max="0.7" step="0.01">
-        </div>
-        <div>
-          <label for="albumSongsPerColumnInput">Songs per Column ({{ albumSongsPerColumn }})</label>
-          <input v-model="albumSongsPerColumn" id="albumSongsPerColumnInput" type="range" min="5" max="20">
-        </div>
-        <div>
-          <label>Colors</label>
-          <div><input v-for="(color, i) in albumColors" :key="i" v-model="albumColors[i]" type="color"></div>
-        </div>
-        <div>
-          <label for="albumGenreInput">Genre</label>
-          <input v-model="albumGenre" id="albumGenreInput" type="text" placeholder="Hip-Hop/Rap">
-        </div>
-        <div>
-          <label for="albumNameSizeInput">Name Size ({{ albumNameSize }})</label>
-          <input v-model="albumNameSize" id="albumNameSizeInput" type="range" min="1" max="6" step="0.1">
-        </div>
-        <div>
-          <label for="albumNameWidthInput">Name Width ({{ albumNameWidth }})</label>
-          <input v-model="albumNameWidth" id="albumNameWidthInput" type="range">
-        </div>
-        <div class="album-display">
-          <template v-if="albumData">
-            <div>
-              <img :src="albumData?.images[0].url">
-            </div>
-            <div>
-              <span class="title">{{ albumData.name }}</span>
-              <span class="artist">{{ albumData.artists[0].name }}</span>
-            </div>
-          </template>
-        </div>
-        <div>
-          <label for="albumExportSizeInput">
-            Size ({{ albumExportSize }} &times; ~{{ Math.floor(albumExportSize * Math.SQRT2) }} px, A4, ~{{ Math.round(albumExportSize / (21 / 2.54)) }} DPI)
-          </label>
+        <Option :title="`Size (${albumExportSize} &times; ~${Math.floor(albumExportSize * Math.SQRT2)} px, A4, ~${Math.round(albumExportSize / (21 / 2.54))} DPI)`" for="albumExportSizeInput">
           <input v-model="albumExportSize" id="albumExportSizeInput" type="range" min="960" max="6720" step="480">
-        </div>
-        <div class="export">
-          <span>Export</span>
+        </Option>
+        <Option class="export" title="Export">
           <button title="Download PNG" @click="takeScreenshot('download', 'png')"><IconDownload/>PNG</button>
           <button title="Download SVG" @click="takeScreenshot('download', 'svg')"><IconDownload/>SVG</button>
           <button title="Download PNG" @click="takeScreenshot('print')"><IconPrinter/>Print</button>
-        </div>
+        </Option>
       </div>
     </div>
     <footer>
-      <a href="https://alexander499.de">Creator</a>
-      <a href="https://github.com/Alexander-499/album-poster-generator">GitHub</a>
+      <div>
+        <a href="https://alexander499.de" target="_blank">Alexander499</a>
+        <a href="https://github.com/Alexander-499/album-poster-generator" target="_blank">GitHub</a>
+        <a href="https://ko-fi.com/Alexander499" target="_blank">Donate</a>
+      </div>
+      <small>Album art/data is fetched from Spotify and remains the property of their respective copyright holders; this tool is for personal, non-commercial use and is not affiliated with or endorsed by Spotify.</small>
     </footer>
   </main>
 </template>
 
 <style scoped>
 main {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  gap: 12px;
   
+  @media (width > 880px) { justify-content: center; }
+  @media (width <= 880px) { padding: 24px 0; }
+
   header {
-    padding-bottom: 12px;
+    text-align: center;
     user-select: none;
   }
-  
+
   .center {
     display: flex;
     gap: 12px;
-    padding-bottom: 32px;
     z-index: 1;
+
+    @media (width <= 880px) { flex-direction: column; }
 
     &:is(:has(#albumNameSizeInput:focus), :has(#albumNameWidthInput:focus))
     > div.left .cover .bottom .name { outline-style: dashed; }
@@ -224,6 +214,8 @@ main {
         --cover-width: 480px;
         --cover-font-size: calc(var(--cover-width) * 1/24);
 
+        @media (width <= 520px) { --cover-width: min(400px, 85vw); }
+
         .cover {
           height: var(--cover-height);
           width: var(--cover-width);
@@ -236,6 +228,13 @@ main {
           box-sizing: border-box;
           padding: calc(var(--cover-width) * .05) calc(var(--cover-width) * .09);
           overflow: hidden;
+
+          span.error {
+            font-family: Inter;
+            word-break: break-all;
+            overflow-y: auto;
+            summary { user-select: none; }
+          }
 
           span.artist { font-size: calc(var(--cover-font-size) * 2); }
           .cover-art { width: 100%; }
@@ -341,13 +340,14 @@ main {
             corner-shape: superellipse(1.6);
           }
 
+          &.spacer { margin-top: auto; }
+
           &.album-display {
             height: 56px;
             flex-direction: row;
             gap: 8px;
             background-color: var(--color-bg-tertiary);
             padding: 8px;
-            margin-top: auto;
 
             > div {
               height: 100%;
@@ -382,7 +382,7 @@ main {
             align-items: center;
             gap: 8px;
             user-select: none;
-            span { margin-right: auto; }
+            &:deep(span) { margin-right: auto; }
 
             button {
               display: flex;
@@ -398,8 +398,6 @@ main {
               svg { stroke: var(--color-text-secondary) }
             }
           }
-
-          label { user-select: none; }
 
           input[type=text] {
             font-size: 14px;
@@ -426,6 +424,27 @@ main {
           }
         }
       }
+    }
+  }
+
+  footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+
+    &, a { color: var(--color-text-secondary); }
+
+    small {
+      width: 480px;
+      font-size: 11px;
+      text-align: center;
+      text-wrap: balance;
+    }
+
+    div {
+      display: flex;
+      gap: 8px;
     }
   }
 }
