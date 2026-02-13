@@ -23,6 +23,7 @@ Turn your favorite Spotify albums into customizable posters, perfect for printin
 ### Upcoming
 - [ ] Custom albums (artists, cover, tracklist, code, info, title, etc.)
 - [ ] Option to get a poster for an artist, song, etc.
+- [ ] Custom font
 
 > [!NOTE]
 > For suggestions **text me on Discord** or **email me**.
