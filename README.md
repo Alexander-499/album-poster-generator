@@ -10,8 +10,8 @@ Turn your favorite Spotify albums into customizable posters, perfect for printin
 
 ## ✨ Features
 
-- Enter any **Spotify album URL/ID** to fetch real album data (cover, tracklist, release info, etc.)
-- Generate beautiful posters with your album's songs, artists, and vibes :)
+- Enter any **Spotify album URL/ID** to fetch real album data (cover, tracklist, info, etc.)
+- Generate **beautiful** posters with your album's songs, artists and vibe :)
 - Highly customizable:
   - Songs: size, offset, width, columns
   - Color palette
@@ -59,7 +59,7 @@ Want just the clean album JSON?
 - Visit: `https://album-poster-generator.netlify.app/album/ALBUM_ID`
 - Example: https://album-poster-generator.netlify.app/album/2uKD5g5T7oklsMHJDcPgLB
 
-Returns full Spotify album data (`available_markets` removed for cleaner output) via Netlify Functions
+Returns full Spotify album data (`available_markets` removed for cleaner output) via Netlify Functions.
 
 ## 🛠️ Tech Stack
 
