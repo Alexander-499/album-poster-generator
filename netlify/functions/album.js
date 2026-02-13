@@ -45,7 +45,7 @@ async function getAccessToken() {
   return data.access_token;
 }
 
-app.get("/*", async (req, res) => {
+app.get("/*path", async (req, res) => {
   let path = req.path;
   if (path.startsWith("/album/")) path = path.replace(/^\/album\//, "/")
   const id = path.replace(/^\//, "");
