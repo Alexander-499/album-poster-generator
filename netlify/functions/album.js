@@ -3,21 +3,6 @@ const serverless = require("serverless-http");
 
 const app = express();
 
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
-});
-
-app.use((req, res, next) => {
-  console.log("Incoming request:");
-  console.log("Method:", req.method);
-  console.log("Path:", req.path);
-  console.log("Params:", req.params);
-  console.log("Original URL:", req.originalUrl);
-  next();
-});
-
 const CLIENT_ID = process.env.CLIENT_ID?.trim();
 const CLIENT_SECRET = process.env.CLIENT_SECRET?.trim();
 if (!CLIENT_ID || !CLIENT_SECRET) console.error("Missing Spotify credentials in env vars");
@@ -59,7 +44,12 @@ app.get("/*path", async (req, res) => {
     });
 
     const albumData = await albumResponse.json();
-    res.json(albumData);
+
+    const cleanAlbumData = data => JSON.parse(JSON.stringify(data, (key, value) => {
+      key === "available_markets" ? undefined : value
+    }));
+
+    res.json(cleanAlbumData(albumData));
   } catch (error) {
     console.error("Spotify fetch error:", error);
     res.status(500).json({ error: error.message });
