@@ -45,9 +45,9 @@ app.get("/*path", async (req, res) => {
 
     const albumData = await albumResponse.json();
 
-    const cleanAlbumData = data => JSON.stringify(data, (key, value) =>
+    const cleanAlbumData = data => JSON.parse(JSON.stringify(data, (key, value) =>
       key === "available_markets" ? undefined : value
-    );
+    ));
 
     res.json(cleanAlbumData(albumData));
   } catch (error) {
