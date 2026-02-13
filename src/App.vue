@@ -56,8 +56,8 @@ async function takeScreenshot(action, fileType = "png") {
       const img = await snapdom.toPng(cover.value, options);
       const printWindow = window.open("", "_blank");
       const css = "body { margin: 0; display: flex; justify-content: center; align-items: center; } img { max-width: 100%; }"
-      printWindow.document.write(`<html><head><style>${css}</style></head><body><img src="${img.src}"></body></html>`);
-      printWindow.document.close();
+      printWindow.document.head.appendChild(Object.assign(printWindow.document.createElement("style"), { textContent: css }));
+      printWindow.document.body.appendChild(Object.assign(printWindow.document.createElement("img"), { src: img.src }));
       printWindow.onload = () => printWindow.print();
     }
   } catch (error) {
@@ -76,7 +76,7 @@ async function generateAlbum(customId) {
     const response = await fetch(url);
     if (!response.ok) throw new Error(`HTTP error with status: ${response.status}`)
     const data = await response.json();
-    console.log(data);
+    console.log("Album:", data);
     albumData.value = data;
   } catch (error) {
     console.error(error);
