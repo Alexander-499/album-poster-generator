@@ -45,10 +45,14 @@ async function getAccessToken() {
   return data.access_token;
 }
 
-app.get("/:id", async (req, res) => {
+app.get("/*", async (req, res) => {
+  let path = req.path;
+  if (path.startsWith("/album/")) path = path.replace(/^\/album\//, "/")
+  const id = path.replace(/^\//, "");
+  console.log("Extracted album ID:", id);
+  if (!id) return res.status(400).json({ error: "Missing album ID" });
+
   try {
-    const { id } = req.params;
-    console.log("Extracted album ID:", id, req.path);
     const token = await getAccessToken();
     const albumResponse = await fetch(`https://api.spotify.com/v1/albums/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
