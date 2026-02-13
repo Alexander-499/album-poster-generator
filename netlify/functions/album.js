@@ -48,6 +48,7 @@ async function getAccessToken() {
 app.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
+    console.log("Extracted album ID:", id, req.path);
     const token = await getAccessToken();
     const albumResponse = await fetch(`https://api.spotify.com/v1/albums/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
@@ -55,7 +56,10 @@ app.get("/:id", async (req, res) => {
 
     const albumData = await albumResponse.json();
     res.json(albumData);
-  } catch (error) { res.status(500).json({ error: error.message })}
+  } catch (error) {
+    console.error("Spotify fetch error:", error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 exports.handler = serverless(app);
