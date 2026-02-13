@@ -69,7 +69,7 @@ const formatTime = totalSeconds => `${Math.floor(totalSeconds / 60)}:${(totalSec
 async function generateAlbum(customId) {
   const id = customId || albumId.value.replace(/\?(.*)/, "").replace(/(.*)\//g, "");
   if (!id || id.length !== 22) return;
-  const url = import.meta.env.PROD ? `/.netlify/functions/album/${id}` : `http://localhost:3000/album/${id}`;
+  const url = import.meta.env.PROD ? `/album/${id}` : `http://localhost:3000/album/${id}`;
   const response = await fetch(url);
   const data = await response.json();
   console.log(data);
