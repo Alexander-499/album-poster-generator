@@ -1,0 +1,13 @@
+[build]
+  base = "client"
+  publish = "client/dist"
+  command = "npm run build"
+
+[[redirects]]
+  from = "/album/*"
+  to = "/.netlify/functions/album/:splat"
+  status = 200
+  force = true
+
+[functions]
+  directory = "netlify/functions"

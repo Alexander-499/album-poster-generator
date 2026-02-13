@@ -1,0 +1,31 @@
+/* Fonts: Inter, Bebas Neue */
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Bebas+Neue&display=swap");
+
+* {
+  padding: 0;
+  margin: 0;
+}
+
+*::placeholder { color: var(--color-text-tertiary); }
+:is(button, input, textarea):focus-visible { outline: 1px #8888 solid; }
+
+:root {
+  --color-bg-primary: #111;
+  --color-bg-secondary: #222;
+  --color-bg-tertiary: #333;
+  --color-bg-quaternary: #444;
+
+  --color-border-secondary: #282828;
+
+  --color-text-primary: white;
+  --color-text-secondary: #ccc;
+  --color-text-tertiary: #aaa;
+}
+
+body, #app {
+  height: 100vh;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
+  font-family: Inter;
+  color-scheme: dark;
+}
