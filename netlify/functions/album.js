@@ -3,7 +3,6 @@ const serverless = requiere("serverless-http");
 
 const app = express();
 
-const PORT = 3000;
 const CLIENT_ID = process.env.CLIENT_ID?.trim();
 const CLIENT_SECRET = process.env.CLIENT_SECRET?.trim();
 if (!CLIENT_ID || !CLIENT_SECRET) console.error("Missing Spotify credentials in env vars");
