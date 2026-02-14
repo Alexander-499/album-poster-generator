@@ -51,7 +51,7 @@ Turn your favorite Spotify albums into customizable posters, perfect for printin
   <tr><td>Name Width</td><td>100</td></tr>
 </table>
 
-<small>Pashanim - 2000</small>
+Pashanim - 2000
 
 ## 🚀 Build-in Spotify Album API
 
