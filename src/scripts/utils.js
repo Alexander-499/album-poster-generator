@@ -1,15 +1,12 @@
-import { computed } from "vue";
-
-export const chunkedTracks = computed(() => {
-  if (!albumData.value) return [];
-  const tracks = albumData.value.tracks.items.map(t => t.name);
-  const size = Number(albumSongsPerColumn.value);
+export const chunkedTracks = (albumData, albumSongsPerColumn) => {
+  if (!albumData) return [];
+  const tracks = albumData.tracks.items.map(t => t.name);
+  const size = Number(albumSongsPerColumn);
   const result = [];
-  for (let i = 0; i < tracks.length; i += size) {
+  for (let i = 0; i < tracks.length; i += size)
     result.push(tracks.slice(i, i + size));
-  }
   return result;
-});
+};
 
 export const formatDate = dateString => {
   const date = new Date(dateString);

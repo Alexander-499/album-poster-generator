@@ -79,7 +79,7 @@ generateAlbum("2uKD5g5T7oklsMHJDcPgLB"); // Pashanim: 2000
             <img class="cover-art" :src="albumData.images[0].url">
             <div class="bottom">
               <div class="songs">
-                <ol v-for="(chunkTracks, i) in chunkedTracks" :key="i">
+                <ol v-for="(chunkTracks, i) in chunkedTracks(albumData, albumSongsPerColumn)" :key="i">
                   <li v-for="(track, trackI) in chunkTracks" :key="trackI">
                     {{ albumSongsPerColumn*i + trackI+1 }}. {{ track }}
                   </li>
