@@ -1,7 +1,15 @@
 const express = require("express");
 const serverless = require("serverless-http");
+const cors = require("cors")
 
 const app = express();
+
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: false
+}));
 
 const CLIENT_ID = process.env.CLIENT_ID?.trim();
 const CLIENT_SECRET = process.env.CLIENT_SECRET?.trim();
@@ -10,6 +18,7 @@ if (!CLIENT_ID || !CLIENT_SECRET) console.error("Missing Spotify credentials in 
 const encoded = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString("base64");
 let cachedToken = null;
 let tokenExpiry = 0;
+
 async function getAccessToken() {
   const now = Date.now();
   if (cachedToken && now < tokenExpiry) return cachedToken;
@@ -43,9 +52,10 @@ app.get("/*path", async (req, res) => {
       headers: { Authorization: `Bearer ${token}` }
     });
 
-    const albumData = await albumResponse.json();
+    if (!albumResponse.ok) return res.status(albumResponse.status).json({ error: await albumResponse.text() });
 
-    const cleanAlbumData = data => JSON.parse(JSON.stringify(data, (key, value) =>
+    const albumData = await albumResponse.json();
+    const cleanAlbumData = obj => JSON.parse(JSON.stringify(obj, (key, value) =>
       key === "available_markets" ? undefined : value
     ));
 

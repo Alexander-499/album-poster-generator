@@ -1,6 +1,7 @@
 <script setup>
 import { snapdom } from "@zumer/snapdom";
-import { ref, computed } from "vue";
+import { ref } from "vue";
+import { chunkedTracks, formatDate, formatTime, formatArtists } from "@/scripts/utils.js"
 
 const albumId = ref("");
 const albumSongsSize = ref(0.6);
@@ -16,27 +17,6 @@ const albumExportSize = ref(3840);
 const albumData = ref(null);
 const albumError = ref(null);
 const cover = ref(null);
-
-const chunkedTracks = computed(() => {
-  if (!albumData.value) return [];
-  const tracks = albumData.value.tracks.items.map(t => t.name);
-  const size = Number(albumSongsPerColumn.value);
-  const result = [];
-  for (let i = 0; i < tracks.length; i += size) {
-    result.push(tracks.slice(i, i + size));
-  }
-  return result;
-});
-
-const formatDate = dateString => {
-  const date = new Date(dateString);
-  const day = date.getDate();
-  const suffix =
-    day % 10 === 1 && day !== 11 ? "st" :
-    day % 10 === 2 && day !== 12 ? "nd" :
-    day % 10 === 3 && day !== 13 ? "rd" : "th";
-  return `${date.toLocaleString("en-US", { month: "long" })} ${day}${suffix}, ${date.getFullYear()}`;
-}
 
 async function takeScreenshot(action, fileType = "png") {
   if (!cover.value) return;
@@ -65,12 +45,10 @@ async function takeScreenshot(action, fileType = "png") {
   }
 }
 
-const formatTime = totalSeconds => `${Math.floor(totalSeconds / 60)}:${(totalSeconds % 60).toString().padStart(2, '0')}`;
-
 async function generateAlbum(customId) {
   const id = customId || albumId.value.replace(/\?(.*)/, "").replace(/(.*)\//g, "");
   if (!id || id.length !== 22) return;
-  const url = import.meta.env.PROD ? `/album/${id}` : `http://localhost:3000/album/${id}`;
+  const url = import.meta.env.PROD ? `/album/${id}` : `https://album-poster-generator.netlify.app/album/${id}`;
 
   try {
     const response = await fetch(url);
@@ -97,7 +75,7 @@ generateAlbum("2uKD5g5T7oklsMHJDcPgLB"); // Pashanim: 2000
       <div class="left">
         <div ref="cover" class="cover">
           <template v-if="albumData">
-            <span class="artist">{{ albumData.artists[0].name }}</span>
+            <span class="artist">{{ formatArtists(albumData.artists.map(a => a.name)) }}</span>
             <img class="cover-art" :src="albumData.images[0].url">
             <div class="bottom">
               <div class="songs">
@@ -150,7 +128,7 @@ generateAlbum("2uKD5g5T7oklsMHJDcPgLB"); // Pashanim: 2000
           <div><img :src="albumData?.images[0].url"></div>
           <div>
             <span class="title">{{ albumData.name }}</span>
-            <span class="artist">{{ albumData.artists[0].name }}</span>
+            <span class="artist">{{ formatArtists(albumData.artists.map(a => a.name)) }}</span>
           </div>
         </div>
         <Option :title="`Size (${albumExportSize} &times; ~${Math.floor(albumExportSize * Math.SQRT2)} px, A4, ~${Math.round(albumExportSize / (21 / 2.54))} DPI)`" for="albumExportSizeInput">

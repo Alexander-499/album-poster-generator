@@ -9,10 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "express": "^5.2.1",
-    "serverless-http": "^4.0.0",
     "@zumer/snapdom": "^2.0.2",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
     "lucide-vue-next": "^0.563.0",
+    "serverless-http": "^4.0.0",
     "vue": "^3.5.27"
   },
   "devDependencies": {
